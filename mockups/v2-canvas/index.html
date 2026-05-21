@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGNAL — Canvas (v2)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, 'Inter', sans-serif; background: #f8f7f4; }
+  .screen-divider { border-top: 2px dashed #d97706; margin: 48px 0 28px; }
+  .screen-label { background:#d97706; color:white; display:inline-block; padding:3px 12px; border-radius:4px; font-size:12px; font-weight:600; letter-spacing:.05em; margin-bottom:16px; }
+  .card { background:white; border-radius:12px; border:1px solid #e5e7eb; }
+  .badge-lc { background:#fef3c7; color:#92400e; font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; }
+  .badge-ok { background:#d1fae5; color:#065f46; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px; }
+  .badge-pending { background:#f3f4f6; color:#6b7280; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px; }
+  .badge-fail { background:#fee2e2; color:#991b1b; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px; }
+  .badge-scheduled { background:#ede9fe; color:#5b21b6; font-size:10px; font-weight:700; padding:2px 7px; border-radius:6px; }
+  .ch-pill { font-size:10px; font-weight:700; padding:2px 7px; border-radius:12px; display:inline-block; }
+  .ch-fb { background:#dbeafe; color:#1e40af; }
+  .ch-ig { background:#fce7f3; color:#9d174d; }
+  .ch-li { background:#dbeafe; color:#1e3a8a; }
+  .ch-th { background:#f3f4f6; color:#374151; }
+  .post-card { background:white; border-radius:12px; border:1px solid #e5e7eb; cursor:pointer; transition:box-shadow .15s, transform .1s; }
+  .post-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.1); transform:translateY(-1px); }
+  .post-card.accepted { border-top:3px solid #10b981; }
+  .post-card.draft-state { border-top:3px solid #f59e0b; }
+  .post-card.lc-state { border-top:3px solid #f59e0b; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:50; display:flex; align-items:center; justify-content:center; }
+  .modal { background:white; border-radius:16px; width:680px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.18); }
+  .hidden { display:none; }
+  .nav-top { background:white; border-bottom:1px solid #e5e7eb; }
+  .nav-item { padding:8px 14px; border-radius:8px; font-size:13px; color:#6b7280; cursor:pointer; font-weight:500; }
+  .nav-item:hover { background:#f3f4f6; color:#111827; }
+  .nav-item.active { background:#fef3c7; color:#92400e; font-weight:600; }
+  .img-block { background:linear-gradient(135deg,#fde68a,#fca5a5); border-radius:8px; height:80px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#78350f; font-weight:600; position:relative; }
+  .img-gen-block { border:2px dashed #d1d5db; border-radius:8px; height:80px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px; font-size:11px; color:#9ca3af; }
+  .tab-btn { padding:5px 12px; border-radius:6px; font-size:12px; cursor:pointer; color:#6b7280; border:1px solid transparent; }
+  .tab-btn.active { background:white; border-color:#e5e7eb; color:#111827; font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .step-dot { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
+  .step-done { background:#d1fae5; color:#065f46; }
+  .step-active { background:#d97706; color:white; }
+  .step-todo { background:#f3f4f6; color:#9ca3af; }
+  .brand-chip { background:white; border:1px solid #e5e7eb; border-radius:10px; padding:8px 12px; cursor:pointer; transition:border-color .15s; }
+  .brand-chip:hover { border-color:#d97706; }
+  .brand-chip.selected { border-color:#d97706; background:#fef9ef; }
+</style>
+</head>
+<body>
+
+<!-- Top nav bar -->
+<div class="nav-top px-6 py-3 flex items-center gap-4 fixed top-0 left-0 right-0 z-30">
+  <div class="flex items-center gap-2 mr-4">
+    <div class="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
+      <span class="text-white text-sm font-black">S</span>
+    </div>
+    <span class="font-bold text-gray-900">SIGNAL</span>
+  </div>
+  <div class="flex gap-1">
+    <div class="nav-item active" onclick="scrollTo('s1')">Board</div>
+    <div class="nav-item" onclick="scrollTo('s6')">Inbox <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">43</span></div>
+    <div class="nav-item" onclick="scrollTo('s7')">Reports</div>
+    <div class="nav-item" onclick="scrollTo('s9')">Settings</div>
+  </div>
+  <div class="ml-auto flex items-center gap-3">
+    <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 text-sm text-gray-400 cursor-pointer">
+      <span>Search brands</span>
+    </div>
+    <button class="bg-amber-500 text-white text-sm px-3 py-1.5 rounded-lg font-semibold hover:bg-amber-600">+ Add Brand</button>
+    <div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-700">P</div>
+  </div>
+</div>
+
+<div class="pt-16">
+
+<!-- SCREEN NAV -->
+<div class="fixed top-11 left-0 right-0 z-40 bg-amber-600 text-white text-xs flex gap-1 px-4 py-1 overflow-x-auto" style="font-family:monospace; top:57px;">
+  <span class="opacity-50 mr-2">SCREENS →</span>
+  <a href="#s1" class="hover:underline whitespace-nowrap">1·Board/Dashboard</a> |
+  <a href="#s2" class="hover:underline whitespace-nowrap">2·Intake Wizard</a> |
+  <a href="#s3" class="hover:underline whitespace-nowrap">3·Monday Email</a> |
+  <a href="#s4" class="hover:underline whitespace-nowrap">4·Review Board</a> |
+  <a href="#s5" class="hover:underline whitespace-nowrap">5·Edit Modal</a> |
+  <a href="#s6" class="hover:underline whitespace-nowrap">6·Inbox</a> |
+  <a href="#s7" class="hover:underline whitespace-nowrap">7·Report</a> |
+  <a href="#s8" class="hover:underline whitespace-nowrap">8·Performance</a> |
+  <a href="#s9" class="hover:underline whitespace-nowrap">9·Settings</a> |
+  <a href="#s10" class="hover:underline whitespace-nowrap">10·RBAC</a> |
+  <a href="#s11" class="hover:underline whitespace-nowrap">11·Client Reviewer</a>
+</div>
+
+<div class="pt-6">
+
+<!-- ===================== SCREEN 1: BOARD / DASHBOARD ===================== -->
+<div id="s1" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 1 — Weekly Board (Priya's home — all brands at a glance)</span></div>
+
+<div class="px-8 pb-8">
+  <!-- Brand chips row -->
+  <div class="flex items-center gap-3 mb-5 overflow-x-auto pb-1">
+    <span class="text-sm text-gray-500 font-medium whitespace-nowrap">All brands:</span>
+    <div class="brand-chip selected flex items-center gap-2">
+      <div class="w-5 h-5 bg-amber-200 rounded text-xs flex items-center justify-center font-bold text-amber-800">G</div>
+      <span class="text-sm font-medium text-gray-800">Grassroot</span>
+      <span class="badge-fail text-xs">!</span>
+    </div>
+    <div class="brand-chip flex items-center gap-2">
+      <div class="w-5 h-5 bg-purple-200 rounded text-xs flex items-center justify-center font-bold text-purple-800">A</div>
+      <span class="text-sm font-medium text-gray-600">AND</span>
+      <span class="badge-ok">Ready</span>
+    </div>
+    <div class="brand-chip flex items-center gap-2">
+      <div class="w-5 h-5 bg-blue-200 rounded text-xs flex items-center justify-center font-bold text-blue-800">GD</div>
+      <span class="text-sm font-medium text-gray-600">Global Desi</span>
+      <span class="badge-scheduled">Scheduled</span>
+    </div>
+    <div class="brand-chip flex items-center gap-2">
+      <div class="w-5 h-5 bg-green-200 rounded text-xs flex items-center justify-center font-bold text-green-800">N</div>
+      <span class="text-sm font-medium text-gray-600">Nykaa</span>
+      <span class="badge-lc">2 LC</span>
+    </div>
+    <div class="brand-chip flex items-center gap-2">
+      <div class="w-5 h-5 bg-rose-200 rounded text-xs flex items-center justify-center font-bold text-rose-800">F</div>
+      <span class="text-sm font-medium text-gray-600">FabIndia</span>
+      <span class="badge-fail">!</span>
+    </div>
+    <div class="brand-chip text-sm text-gray-400">+ 3 more</div>
+  </div>
+
+  <!-- Week board: Grassroot selected -->
+  <div class="card p-6 mb-4">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center font-bold text-amber-700">G</div>
+      <div>
+        <h2 class="font-bold text-gray-900 text-lg">Grassroot</h2>
+        <div class="text-xs text-gray-500">Anita Dongre · Week of 26 May 2026 · 9 / 14 accepted</div>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-sm text-amber-700 bg-amber-100 px-3 py-1 rounded-full font-medium">⚠ Token expired — re-auth Facebook</span>
+        <div class="flex gap-1">
+          <div class="tab-btn active">Week</div>
+          <div class="tab-btn">Month</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board columns: Mon–Fri -->
+    <div class="grid grid-cols-5 gap-3">
+      <!-- Monday -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">Mon 26</div>
+        <div class="space-y-2">
+          <div class="post-card accepted p-3" onclick="document.getElementById('canvasEditModal').classList.remove('hidden')">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-fb">fb</span><span class="badge-ok">✓</span></div>
+            <p class="text-xs text-gray-700 leading-relaxed">"The block-printing on this kurta took 6 hours. Twelve hands…"</p>
+            <div class="text-xs text-gray-400 mt-1">9:30 AM</div>
+          </div>
+          <div class="post-card lc-state p-3" onclick="document.getElementById('canvasEditModal').classList.remove('hidden')">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-ig">ig</span><span class="badge-lc">LC</span></div>
+            <div class="img-gen-block mb-2 h-14">
+              <div class="text-gray-400" style="font-size:18px">⟳</div>
+              <span class="text-xs text-gray-400">Generating…</span>
+            </div>
+            <p class="text-xs text-gray-700">"Six hours. One kurta…"</p>
+            <div class="text-xs text-gray-400 mt-1">11:00 AM</div>
+          </div>
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-li">li</span><span class="badge-ok">✓</span></div>
+            <p class="text-xs text-gray-700">"India has 7 million block-printing artisans…"</p>
+            <div class="text-xs text-gray-400 mt-1">8:00 AM</div>
+          </div>
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-th">threads</span><span class="badge-ok">✓</span></div>
+            <p class="text-xs text-gray-700">"6 hours of block-printing. Not a bug. The feature."</p>
+            <div class="text-xs text-gray-400 mt-1">11:05 AM</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tuesday -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">Tue 27</div>
+        <div class="space-y-2">
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-fb">fb</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"Two weavers. One saree. A craft tradition older than any fashion…"</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+              <button class="text-xs text-gray-400">Draft</button>
+            </div>
+          </div>
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-ig">ig</span><span class="badge-ok">✓</span></div>
+            <div class="img-block mb-1 h-14"><span>AI image ✓</span><button class="absolute top-1 right-1 text-xs bg-white bg-opacity-70 rounded px-1">↺</button></div>
+            <p class="text-xs text-gray-700">"Handblock. Heartmade."</p>
+          </div>
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-li">li</span><span class="badge-ok">✓</span></div>
+            <p class="text-xs text-gray-700">"What does a business model that respects craft look like?…"</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wednesday -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">Wed 28</div>
+        <div class="space-y-2">
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-fb">fb</span><span class="badge-ok">✓</span></div>
+            <p class="text-xs text-gray-700">"Every thread in Grassroot's linen has a story…"</p>
+          </div>
+          <div class="post-card accepted p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-ig">ig</span><span class="badge-ok">✓</span></div>
+            <div class="img-block mb-1 h-14"><span>AI image ✓</span></div>
+            <p class="text-xs text-gray-700">"The loom does not hurry. Neither do we."</p>
+          </div>
+          <div class="post-card p-3 border border-dashed border-gray-200">
+            <div class="text-xs text-gray-300 text-center py-2">No LinkedIn post · Wed</div>
+          </div>
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-th">threads</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"Slow fashion isn't a trend. It's a correction."</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thursday -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">Thu 29</div>
+        <div class="space-y-2">
+          <div class="post-card draft-state p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-fb">fb</span><span class="badge-lc">Draft</span></div>
+            <p class="text-xs text-gray-700">"The artisan's hand guides the loom…" <span class="text-indigo-500">editing…</span></p>
+            <button class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mt-1">Resume edit</button>
+          </div>
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-ig">ig</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"Thursday is for the artisan you've never met…"</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+            </div>
+          </div>
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-li">li</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"The village of Sanganer produces 40,000 metres…"</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friday -->
+      <div>
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 text-center">Fri 30</div>
+        <div class="space-y-2">
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-fb">fb</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"Friday spotlight: the Jaipur block-print collective…"</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+            </div>
+          </div>
+          <div class="post-card p-3">
+            <div class="flex items-center gap-1 mb-2"><span class="ch-pill ch-ig">ig</span><span class="badge-pending">Pending</span></div>
+            <p class="text-xs text-gray-700">"Friday: where slow fashion meets your weekend…"</p>
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Accept</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="mt-5 flex items-center gap-3 pt-4 border-t border-gray-100">
+      <button class="bg-green-600 text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-green-700">✓ Accept all pending</button>
+      <button class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700">⏰ Schedule accepted posts</button>
+      <button class="border border-gray-300 text-gray-600 text-sm px-3 py-2 rounded-lg">↺ Regen selected</button>
+      <div class="ml-auto text-sm text-gray-400">9/14 accepted · <span class="text-amber-600 font-medium">1 LOW CONFIDENCE needs review</span></div>
+    </div>
+  </div>
+
+  <!-- Strategic header card -->
+  <div class="card p-5 border-l-4 border-amber-400">
+    <div class="flex items-start gap-3">
+      <div class="text-2xl">💡</div>
+      <div class="flex-1">
+        <div class="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Weekly Strategy — Grassroot, 26 May</div>
+        <div class="font-semibold text-gray-900 mb-1">"Artisan-to-closet storytelling" — lead with the hands behind the fabric, not the garment.</div>
+        <div class="text-sm text-gray-600 mb-2">Grassroot's top posts in April were sourcing stories (4.1% engagement vs. 1.8% on product shots). Global Fashion Revolution Week ends May 25 — supply-chain conversation is still warm.</div>
+        <div class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 inline-block">⚠ Watch for: avoid "organic = cheaper" framing. Grassroot's ICP is premium-conscious.</div>
+      </div>
+      <div class="text-xs text-gray-400">Auto-generated Mon 7:00 AM</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 2: INTAKE ===================== -->
+<div id="s2" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 2 — Guided Intake Wizard (Priya onboards AND)</span></div>
+
+<div class="max-w-2xl mx-auto px-8 pb-8">
+  <div class="card p-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center font-bold text-purple-700 text-lg">A</div>
+      <div>
+        <h2 class="font-bold text-gray-900 text-lg">AND by Anita Dongre</h2>
+        <div class="text-xs text-gray-400">New brand · intake in progress</div>
+      </div>
+    </div>
+
+    <!-- Step progress -->
+    <div class="flex items-center gap-1 mb-8">
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-done">✓</div>
+        <span class="text-xs text-green-700 font-medium">Voice</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-green-300 mb-3"></div>
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-done">✓</div>
+        <span class="text-xs text-green-700">Audience</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-green-300 mb-3"></div>
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-done">✓</div>
+        <span class="text-xs text-green-700">Taboo</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-amber-300 mb-3"></div>
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-active">4</div>
+        <span class="text-xs text-amber-700 font-bold">Posts ♥</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-gray-200 mb-3"></div>
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-todo">5</div>
+        <span class="text-xs text-gray-400">Posts ✗</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-gray-200 mb-3"></div>
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-dot step-todo">6</div>
+        <span class="text-xs text-gray-400">KPIs</span>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-900 text-base mb-1">Three posts AND has done well — and why.</h3>
+      <p class="text-sm text-gray-500 mb-4">Paste copy or a link. Add a note on why it worked. These become the voice fingerprint SIGNAL drafts against.</p>
+
+      <div class="space-y-3">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold text-green-700">Example 1 ✓</span></div>
+          <div class="text-sm text-gray-800 mb-1">"Own your story. AND x [Collab] — the kurta that started conversations before she said a word."</div>
+          <div class="text-xs text-gray-500 bg-white rounded-lg px-3 py-1.5">Why: Celeb collab + implied narrative. High IG saves. Fashion + aspiration frame worked.</div>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-2"><span class="text-xs font-bold text-green-700">Example 2 ✓</span></div>
+          <div class="text-sm text-gray-800 mb-1">"Bold prints, bolder choices. Monday morning, already the most interesting person in the room."</div>
+          <div class="text-xs text-gray-500 bg-white rounded-lg px-3 py-1.5">Why: Office-wear confidence frame. 6.2% save rate on IG — top 5% for AND.</div>
+        </div>
+        <div class="border border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
+          <div class="text-xs font-medium text-gray-400 mb-2">Example 3 — click to add</div>
+          <textarea class="w-full text-sm text-gray-700 bg-transparent resize-none outline-none" rows="2" placeholder="Paste the post here…"></textarea>
+          <input class="w-full text-xs text-gray-400 bg-transparent outline-none mt-2 border-t border-dashed border-gray-200 pt-2" placeholder="Why did it work? (optional)">
+        </div>
+      </div>
+    </div>
+
+    <!-- PDF + import -->
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+        <div class="text-xs font-semibold text-green-700 mb-2">PDF Brand Guidelines ✓</div>
+        <div class="flex items-center gap-2">
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">PDF</span>
+          <span class="text-xs text-gray-700">AND_Brand_Guidelines.pdf</span>
+        </div>
+        <div class="text-xs text-green-600 mt-1">22 pages · 3,100 tokens ingested</div>
+      </div>
+      <div class="border border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-colors">
+        <span class="text-xl">📎</span>
+        <div class="text-xs font-medium text-gray-600">Import Notion / Google Slides</div>
+        <div class="text-xs text-gray-400">Paste a URL</div>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-between">
+      <button class="border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-lg">← Back</button>
+      <div class="flex gap-2">
+        <button class="text-sm text-gray-400">Save draft</button>
+        <button class="bg-amber-500 text-white text-sm px-5 py-2 rounded-lg font-semibold hover:bg-amber-600">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 3: MONDAY EMAIL ===================== -->
+<div id="s3" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 3 — Monday Packet Email (in-app preview)</span></div>
+
+<div class="max-w-xl mx-auto px-8 pb-8">
+  <div class="card overflow-hidden shadow-md">
+    <div class="bg-amber-500 px-5 py-4 text-white">
+      <div class="text-xs opacity-70 mb-1">signal@ceob-agency.com → priya@agency.com · Mon 26 May, 7:00 AM IST</div>
+      <div class="font-bold text-lg">SIGNAL | Grassroot | Week of 26 May — 14 posts ready</div>
+    </div>
+    <div class="p-5 space-y-4">
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+        <div class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Weekly Strategy</div>
+        <div class="font-semibold text-gray-900 mb-1">"Artisan-to-closet storytelling"</div>
+        <div class="text-sm text-gray-600 mb-2">Top April posts were sourcing stories (4.1% vs 1.8%). Fashion Revolution Week conversation still warm — capitalise without chasing a hashtag.</div>
+        <div class="text-xs text-amber-700">⚠ Watch: avoid "organic = cheaper" — premium-conscious ICP.</div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Monday 26 May</div>
+        <div class="space-y-2">
+          <div class="border border-gray-100 rounded-lg p-3 text-sm">
+            <span class="ch-pill ch-fb mr-1">fb</span>
+            <span class="text-gray-400 text-xs">9:30 AM</span>
+            <div class="text-gray-800 mt-1">"The block-printing on this kurta took 6 hours. Twelve hands. One pattern repeated 340 times…"</div>
+            <div class="text-xs text-gray-400 mt-1 italic">Rationale: Monday artisan origin stories. "12 hands" specificity outperforms 3:1.</div>
+          </div>
+          <div class="border border-amber-100 bg-amber-50 rounded-lg p-3 text-sm">
+            <span class="ch-pill ch-ig mr-1">ig</span>
+            <span class="text-gray-400 text-xs">11:00 AM</span>
+            <span class="badge-lc ml-1">LOW CONFIDENCE</span>
+            <div class="text-gray-800 mt-1">"Six hours. One kurta. This is why it's not mass-produced."</div>
+            <div class="text-xs text-amber-700 mt-1">⚠ Visual brief: terracotta palette not confirmed in brand kit. Review image before approving.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-sm">
+        <div class="text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Performance signal (last week)</div>
+        <div class="text-green-800 space-y-1">
+          <div>• Artisan reel: 6,200 reach · 4.8% engagement · 43 saves (IG)</div>
+          <div>• LinkedIn sourcing: 1,100 impressions · 38 reposts</div>
+          <div class="font-medium">→ Artisan-process posts up from 2→3/week this week</div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <a href="#s4" class="bg-amber-500 text-white text-sm px-5 py-2.5 rounded-xl font-semibold hover:bg-amber-600">Open Review Board →</a>
+        <button class="border border-gray-300 text-gray-600 text-sm px-4 py-2 rounded-xl">Approve all</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 4: REVIEW BOARD (full-screen canvas) ===================== -->
+<div id="s4" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 4 — Review Board (Grassroot week — canvas view with bulk toolbar)</span></div>
+
+<div class="px-8 pb-8">
+  <!-- Sticky context header -->
+  <div class="card p-4 mb-4">
+    <div class="flex items-center gap-4">
+      <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center font-bold text-amber-700">G</div>
+      <div>
+        <span class="font-bold text-gray-900">Grassroot</span>
+        <span class="text-gray-400 text-sm ml-2">/ Week of 26 May 2026</span>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-sm text-gray-600">9 / 14 accepted</span>
+        <div class="w-40 h-2 bg-gray-200 rounded-full"><div class="h-2 bg-green-500 rounded-full" style="width:64%"></div></div>
+        <button class="bg-green-600 text-white text-sm px-4 py-1.5 rounded-lg font-semibold">✓ Accept all pending</button>
+        <button class="bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-lg font-semibold">Schedule week</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channel rows with day columns -->
+  <div class="space-y-3 overflow-x-auto">
+    <!-- FB row -->
+    <div class="flex gap-3 min-w-max">
+      <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center">
+        <span class="ch-pill ch-fb">facebook</span>
+      </div>
+      <div class="grid grid-cols-5 gap-3" style="width:900px;">
+        <div class="post-card accepted p-3" onclick="document.getElementById('canvasEditModal').classList.remove('hidden')">
+          <div class="flex items-center gap-1 mb-1"><span class="badge-ok">✓ Accepted</span></div>
+          <p class="text-xs text-gray-700">"The block-printing on this kurta took 6 hours. Twelve hands…"</p>
+          <div class="text-xs text-gray-400 mt-1">9:30 AM · Mon</div>
+          <div class="flex gap-1 mt-2 opacity-0 group-hover:opacity-100">
+            <button class="text-xs text-gray-400">✏ Edit</button>
+          </div>
+        </div>
+        <div class="post-card p-3">
+          <div class="flex items-center gap-1 mb-1"><span class="badge-pending">Pending</span></div>
+          <p class="text-xs text-gray-700">"Two weavers. One saree. A craft tradition older…"</p>
+          <div class="text-xs text-gray-400 mt-1">9:30 AM · Tue</div>
+          <div class="flex gap-1 mt-2">
+            <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Accept</button>
+            <button class="text-xs text-gray-400 ml-1">Draft</button>
+          </div>
+        </div>
+        <div class="post-card accepted p-3">
+          <span class="badge-ok">✓</span>
+          <p class="text-xs text-gray-700 mt-1">"Every thread in Grassroot's linen has a story…"</p>
+          <div class="text-xs text-gray-400 mt-1">Wed</div>
+        </div>
+        <div class="post-card draft-state p-3">
+          <span class="badge-lc">Draft</span>
+          <p class="text-xs text-gray-700 mt-1">"The artisan's hand guides the loom — in editing…"</p>
+          <div class="text-xs text-gray-400 mt-1">Thu</div>
+          <button class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full mt-1">Resume</button>
+        </div>
+        <div class="post-card p-3">
+          <span class="badge-pending">Pending</span>
+          <p class="text-xs text-gray-700 mt-1">"Friday spotlight: Jaipur block-print collective…"</p>
+          <div class="text-xs text-gray-400 mt-1">Fri</div>
+          <div class="flex gap-1 mt-2">
+            <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Accept</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IG row -->
+    <div class="flex gap-3 min-w-max">
+      <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center">
+        <span class="ch-pill ch-ig">instagram</span>
+      </div>
+      <div class="grid grid-cols-5 gap-3" style="width:900px;">
+        <div class="post-card lc-state p-3" onclick="document.getElementById('canvasEditModal').classList.remove('hidden')">
+          <div class="flex items-center gap-1 mb-1"><span class="badge-lc">LOW CONF</span></div>
+          <div class="img-gen-block mb-2 h-12">
+            <span style="font-size:18px">⟳</span>
+            <span>Generating…</span>
+          </div>
+          <p class="text-xs text-gray-700">"Six hours. One kurta…"</p>
+          <div class="text-xs text-gray-400 mt-1">Mon</div>
+        </div>
+        <div class="post-card accepted p-3">
+          <span class="badge-ok">✓</span>
+          <div class="img-block mt-1 mb-1 h-12" style="height:48px;"><span>AI image ✓</span></div>
+          <p class="text-xs text-gray-700">"Handblock. Heartmade."</p>
+        </div>
+        <div class="post-card accepted p-3">
+          <span class="badge-ok">✓</span>
+          <div class="img-block mt-1 mb-1 h-12" style="height:48px;"><span>AI image ✓</span></div>
+          <p class="text-xs text-gray-700">"The loom does not hurry."</p>
+        </div>
+        <div class="post-card p-3">
+          <span class="badge-pending">Pending</span>
+          <div class="img-gen-block mt-1 h-12" style="height:48px;"><span>Upload or AI →</span></div>
+          <p class="text-xs text-gray-700">"Thursday: artisan stories…"</p>
+        </div>
+        <div class="post-card p-3">
+          <span class="badge-pending">Pending</span>
+          <p class="text-xs text-gray-700 mt-1">"Slow fashion meets your weekend…"</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LI row -->
+    <div class="flex gap-3 min-w-max">
+      <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center">
+        <span class="ch-pill ch-li">linkedin</span>
+      </div>
+      <div class="grid grid-cols-5 gap-3" style="width:900px;">
+        <div class="post-card accepted p-3">
+          <span class="badge-ok">✓</span>
+          <p class="text-xs text-gray-700 mt-1">"India has 7 million block-printing artisans…"</p>
+        </div>
+        <div class="post-card accepted p-3">
+          <span class="badge-ok">✓</span>
+          <p class="text-xs text-gray-700 mt-1">"What does a business model that respects craft look like?…"</p>
+        </div>
+        <div class="post-card p-3 border border-dashed border-gray-200">
+          <p class="text-xs text-gray-300 text-center py-3">No post · Wed</p>
+        </div>
+        <div class="post-card p-3">
+          <span class="badge-pending">Pending</span>
+          <p class="text-xs text-gray-700 mt-1">"The village of Sanganer produces 40,000 metres…"</p>
+          <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-1">Accept</button>
+        </div>
+        <div class="post-card p-3 border border-dashed border-gray-200">
+          <p class="text-xs text-gray-300 text-center py-3">No post · Fri</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Canvas Edit Modal (Screen 5) -->
+<div id="canvasEditModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div id="s5" class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <span class="screen-label">SCREEN 5 — Edit Modal</span>
+        <h3 class="font-bold text-gray-900 mt-1">Grassroot / Instagram / Monday 26 May</h3>
+      </div>
+      <button onclick="document.getElementById('canvasEditModal').classList.add('hidden')" class="text-gray-300 hover:text-gray-700 text-2xl leading-none">×</button>
+    </div>
+    <div class="p-6 grid grid-cols-5 gap-5">
+      <!-- Left: 3 cols -->
+      <div class="col-span-3 space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Caption</label>
+          <textarea class="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 resize-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none" rows="5">"Six hours. One kurta. This is why it's not mass-produced."</textarea>
+          <div class="flex justify-between text-xs text-gray-400 mt-1"><span>62 chars</span><span>IG · Mon 26 May · 11:00 AM</span></div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Rationale</label>
+          <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600">IG Grassroot audience responds to artisan process visuals 2× over product flat-lays. Short caption, no hashtag clutter — visual carries weight.</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge-lc">LOW CONFIDENCE</span>
+          <span class="text-xs text-gray-500">Terracotta palette not confirmed in brand kit.</span>
+        </div>
+        <div class="flex gap-2">
+          <button class="bg-green-600 text-white text-sm px-4 py-2 rounded-lg font-semibold">Save & Accept</button>
+          <button class="border border-gray-200 text-gray-600 text-sm px-3 py-2 rounded-lg">Save Draft</button>
+          <button class="text-red-400 text-sm ml-auto hover:text-red-600">Delete</button>
+        </div>
+
+        <!-- Comment thread -->
+        <div class="border-t border-gray-100 pt-4">
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Review Comments</div>
+          <div class="bg-orange-50 rounded-xl p-3 mb-3">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="w-5 h-5 bg-orange-200 rounded-full flex items-center justify-center text-xs font-bold text-orange-700">M</div>
+              <span class="text-xs font-semibold">Meera K.</span>
+              <span class="text-xs text-gray-400">Reviewer · Anita Dongre</span>
+            </div>
+            <div class="text-sm text-gray-700">We never say "mass-produced" — can you use "made to order" instead?</div>
+            <div class="flex gap-2 mt-2">
+              <button class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Resolve ✓</button>
+              <button class="text-xs text-indigo-600">Reply</button>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <input class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-amber-400" placeholder="Add comment…">
+            <button class="bg-amber-500 text-white text-sm px-3 rounded-lg font-medium">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: image — 2 cols -->
+      <div class="col-span-2 space-y-3">
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Visual</label>
+        <div class="img-gen-block w-full" style="height:160px; flex-direction:column; gap:8px;">
+          <div style="width:32px;height:32px;border:3px solid #fbbf24;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
+          <div class="text-sm text-gray-500 font-medium">Generating AI image…</div>
+          <div class="text-xs text-gray-400 px-4 text-center">Close-up hands mid-print, warm daylight, terracotta + ivory palette</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 text-xs border border-amber-300 text-amber-700 py-1.5 rounded-lg font-medium bg-amber-50 hover:bg-amber-100">↺ Regen</button>
+          <button class="flex-1 text-xs border border-gray-200 text-gray-600 py-1.5 rounded-lg font-medium hover:bg-gray-50">↑ Upload</button>
+        </div>
+        <div class="text-xs text-gray-400 bg-gray-50 rounded-xl p-3">
+          <div class="font-medium text-gray-600 mb-1">Art direction brief:</div>
+          Close-up of hands mid-print, warm daylight, block in frame. NO overhead product shot. Terracotta + ivory palette. Artisan process style.
+        </div>
+        <div class="text-xs text-amber-700 bg-amber-50 rounded-xl p-2">Regen 0/3 used. After 3 regens, flagged for human asset creation.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 6: INBOX ===================== -->
+<div id="s6" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 6 — Comments Inbox (triage canvas)</span></div>
+
+<div class="px-8 pb-8">
+  <div class="grid grid-cols-3 gap-4">
+    <!-- Positive batch -->
+    <div class="card p-5">
+      <div class="text-xs font-bold text-green-600 uppercase tracking-wider mb-3">Positive (162)</div>
+      <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-3">
+        <div class="font-semibold text-green-800 mb-1">Gratitude batch</div>
+        <div class="text-xs text-green-700 mb-3">3 reply variants ready in Grassroot voice. Preview before approving.</div>
+        <div class="space-y-1 text-xs text-gray-600 mb-3">
+          <div class="bg-white rounded p-2">"Thank you — every piece is made with care."</div>
+          <div class="bg-white rounded p-2">"Made with love, worn with pride."</div>
+          <div class="bg-white rounded p-2">"This is Grassroot — thank you for seeing it."</div>
+        </div>
+        <button class="w-full bg-green-600 text-white text-xs py-2 rounded-lg font-semibold">Approve all 162 →</button>
+      </div>
+      <div class="text-xs text-gray-400 text-center">Replies vary randomly — no platform spam risk</div>
+    </div>
+
+    <!-- Questions -->
+    <div class="card p-5">
+      <div class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-3">Questions (15)</div>
+      <div class="space-y-3">
+        <div class="border border-blue-200 rounded-xl p-3 bg-blue-50">
+          <div class="flex items-center gap-1 mb-1">
+            <span class="text-xs text-gray-500">@ananya_b · IG · 1h</span>
+          </div>
+          <p class="text-xs text-gray-800">"Does Grassroot ship internationally? I'm in London 🇬🇧"</p>
+          <div class="mt-2 bg-white rounded p-2 text-xs text-blue-800">
+            AI reply: "Yes! Grassroot ships to 20+ countries. Visit grassroot.co.in/shipping ♥"
+          </div>
+          <div class="flex gap-1 mt-2">
+            <button class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-medium">Approve</button>
+            <button class="text-xs text-gray-400">Edit</button>
+          </div>
+        </div>
+        <div class="border border-gray-200 rounded-xl p-3">
+          <span class="text-xs text-gray-500">@kavitha_r · FB · 2h</span>
+          <p class="text-xs text-gray-800 mt-1">"Where can I find Grassroot stores in Pune?"</p>
+          <div class="mt-2 bg-gray-50 rounded p-2 text-xs text-gray-600">AI reply: "Our Pune store is at Koregaon Park…" <span class="text-amber-600">[verify address]</span></div>
+          <div class="flex gap-1 mt-2">
+            <button class="text-xs bg-blue-600 text-white px-3 py-1 rounded-full">Approve</button>
+            <button class="text-xs text-gray-400">Edit first</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Negative / Escalated -->
+    <div class="card p-5">
+      <div class="text-xs font-bold text-red-600 uppercase tracking-wider mb-3">Flagged (8)</div>
+      <div class="space-y-3">
+        <div class="border border-red-200 rounded-xl p-3 bg-red-50">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="badge-fail">Cultural appropriation</span>
+          </div>
+          <p class="text-xs text-gray-800">"This is appropriation of tribal art for profit. Artisans should own this."</p>
+          <div class="text-xs text-red-700 bg-red-100 rounded p-2 mt-2">No auto-draft. Write response — sensitivity review required.</div>
+          <textarea class="w-full border border-red-200 rounded-lg p-2 text-xs mt-2 resize-none outline-none" rows="2" placeholder="Write response…"></textarea>
+          <div class="flex gap-1 mt-1">
+            <button class="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium">Send</button>
+            <button class="text-xs border border-gray-300 text-gray-500 px-2 py-1 rounded-full">Escalate to CEO B</button>
+          </div>
+        </div>
+        <div class="border border-red-100 rounded-xl p-3 bg-red-50">
+          <span class="badge-fail">Pricing · ×3</span>
+          <p class="text-xs text-gray-800 mt-1">"Rs 4,500 for a kurta?"</p>
+          <div class="flex gap-1 mt-2">
+            <button class="text-xs border border-gray-300 text-gray-500 px-2 py-1 rounded-full">Write reply</button>
+            <button class="text-xs text-amber-600">Escalate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 7: REPORT ===================== -->
+<div id="s7" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 7 — Monthly Report Editor (canvas-style rich text)</span></div>
+
+<div class="max-w-3xl mx-auto px-8 pb-8">
+  <div class="card overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h2 class="font-bold text-gray-900">Grassroot — May 2026 Monthly Report</h2>
+        <div class="text-xs text-gray-400">Auto-drafted · for review · export removes SIGNAL branding</div>
+      </div>
+      <div class="flex gap-2">
+        <button class="text-sm border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg">Preview</button>
+        <button class="bg-amber-500 text-white text-sm px-4 py-1.5 rounded-lg font-semibold">Export DOCX ↓</button>
+      </div>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">Sections marked <strong>[AGENCY: insert]</strong> need real platform numbers — SIGNAL never fabricates metrics.</div>
+
+      <div>
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">What We Posted</div>
+        <div class="border border-gray-200 rounded-xl p-4 focus:border-amber-400 outline-none" contenteditable="true">
+          <p class="text-sm text-gray-800 leading-relaxed">In May, Grassroot's content strategy centred on artisan-to-closet transparency and post-Fashion Revolution Week momentum. We published 22 posts across Facebook, Instagram, LinkedIn, and Threads. The strategic shift — doubling artisan process content from 2 to 3 posts/week in weeks 3–4 — was driven by April engagement data showing 4.1% avg. engagement on sourcing stories vs. 1.8% on product shots.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">What Performed</div>
+        <div class="border border-gray-200 rounded-xl p-4">
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>
+              <div>Artisan-process content: <span class="bg-amber-100 text-amber-700 px-1 rounded font-medium">[AGENCY: insert engagement rate]</span> avg. engagement, <span class="bg-amber-100 text-amber-700 px-1 rounded font-medium">[AGENCY: insert saves]</span> saves on IG. Best on Mondays + Thursdays.</div>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+              <div>LinkedIn sourcing posts: <span class="bg-amber-100 text-amber-700 px-1 rounded font-medium">[AGENCY: insert impressions]</span> impressions, <span class="bg-amber-100 text-amber-700 px-1 rounded font-medium">[AGENCY: insert reposts]</span> reposts. Audience: brand press + impact investors.</div>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="w-2 h-2 rounded-full bg-gray-300 mt-1.5 flex-shrink-0"></span>
+              <div>Product flat-lay posts: underperformed. Recommend phasing out standalone product-only posts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">June Recommendation (SIGNAL AI)</div>
+        <div class="border border-amber-200 bg-amber-50 rounded-xl p-4 text-sm text-gray-800">Increase artisan-feature cadence to 4 posts/week in June. Introduce "village spotlight" series — one artisan community per two weeks across channels. Supports supply-chain transparency positioning and provides cross-postable content for Grassroot's sustainability report.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 8: PERFORMANCE ===================== -->
+<div id="s8" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 8 — Performance Loop (4-week view)</span></div>
+
+<div class="px-8 pb-8">
+  <div class="grid grid-cols-3 gap-4">
+    <div class="card p-5 col-span-2">
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="font-bold text-gray-900">Engagement Rate — Grassroot</h3>
+        <div class="flex gap-1 ml-auto">
+          <div class="tab-btn active">Engagement</div>
+          <div class="tab-btn">Reach</div>
+          <div class="tab-btn">Saves</div>
+        </div>
+      </div>
+      <div class="flex items-end gap-4 h-36 mb-3 px-2">
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-indigo-200 rounded-t" style="height:37%"></div>
+          <div class="text-xs text-gray-400">W1</div>
+          <div class="text-sm font-semibold text-gray-600">1.8%</div>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-indigo-300 rounded-t" style="height:50%"></div>
+          <div class="text-xs text-gray-400">W2</div>
+          <div class="text-sm font-semibold text-gray-600">2.4%</div>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-indigo-500 rounded-t" style="height:75%"></div>
+          <div class="text-xs text-gray-400">W3</div>
+          <div class="text-sm font-bold text-indigo-700">3.6%</div>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-green-500 rounded-t" style="height:100%"></div>
+          <div class="text-xs text-gray-400 font-semibold">W4 ↑</div>
+          <div class="text-sm font-bold text-green-600">4.8%</div>
+        </div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-xl p-3 text-xs text-green-800">
+        Strategy adjustment applied W3: artisan-process posts 2→3/week. Engagement up 33% WoW. Applied to current week automatically.
+      </div>
+    </div>
+
+    <div class="card p-5">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Top Posts · Last 4 weeks</div>
+      <div class="space-y-3">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+          <span class="badge-ok">HIGH SIGNAL</span>
+          <p class="text-xs text-gray-700 mt-1">"6 hours of block-printing per kurta…" · IG</p>
+          <div class="text-xs text-green-700 font-semibold mt-1">4.8% · 43 saves · 6,200 reach</div>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+          <span class="badge-ok">HIGH SIGNAL</span>
+          <p class="text-xs text-gray-700 mt-1">"India has 7 million artisans…" · LI</p>
+          <div class="text-xs text-green-700 font-semibold mt-1">38 reposts · 1,100 impressions</div>
+        </div>
+        <div class="bg-gray-50 border border-gray-100 rounded-lg p-3">
+          <span class="text-xs text-gray-400">Normal</span>
+          <p class="text-xs text-gray-700 mt-1">"Spring Linen 2026" product shot · FB</p>
+          <div class="text-xs text-gray-500 mt-1">1.2% · 820 reach</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 9: SETTINGS ===================== -->
+<div id="s9" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 9 — Brand Kit Settings (Grassroot)</span></div>
+
+<div class="max-w-3xl mx-auto px-8 pb-8">
+  <div class="card p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center font-bold text-amber-700">G</div>
+      <div>
+        <h2 class="font-bold text-gray-900">Grassroot — Brand Kit</h2>
+        <div class="flex items-center gap-2 mt-0.5">
+          <span class="text-yellow-400">★★★</span>
+          <span class="text-xs text-green-600 font-medium">Full signal</span>
+          <span class="text-xs text-gray-400">· Version 3 · 12 May 2026</span>
+        </div>
+      </div>
+      <button class="ml-auto text-xs border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600">Version history</button>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Brand Voice</div>
+        <div class="flex flex-wrap gap-1">
+          <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">artisan-transparency</span>
+          <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">slow-fashion</span>
+          <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">premium-craft</span>
+          <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">understated</span>
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Active Channels</div>
+        <div class="flex gap-2 flex-wrap">
+          <span class="ch-pill ch-fb">facebook</span>
+          <span class="ch-pill ch-ig">instagram</span>
+          <span class="ch-pill ch-li">linkedin</span>
+          <span class="ch-pill ch-th">threads</span>
+        </div>
+        <div class="text-xs text-amber-600 mt-2">[OPEN: dev-kickoff] LinkedIn Partner Program pending</div>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Taboo List</div>
+        <div class="space-y-1 text-xs text-gray-700">
+          <div>✕ No competitor names</div>
+          <div>✕ No political topics</div>
+          <div>✕ No price mention in copy</div>
+          <div>✕ No "organic = cheaper" framing</div>
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Schedule Windows</div>
+        <div class="space-y-1 text-xs text-gray-700">
+          <div><span class="ch-pill ch-fb">fb</span> Mon/Wed/Fri · 9:30 AM IST</div>
+          <div><span class="ch-pill ch-ig">ig</span> Mon/Wed/Fri · 11:00 AM IST</div>
+          <div><span class="ch-pill ch-li">li</span> Mon/Wed · 8:00 AM IST</div>
+          <div><span class="ch-pill ch-th">th</span> Mon/Wed/Fri · 11:05 AM IST</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 10: RBAC ===================== -->
+<div id="s10" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 10 — RBAC Admin (CEO B — Users & Roles)</span></div>
+
+<div class="max-w-4xl mx-auto px-8 pb-8">
+  <div class="card overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-bold text-gray-900">Users & Roles</h2>
+      <button class="bg-amber-500 text-white text-sm px-4 py-1.5 rounded-lg font-semibold">+ Invite user</button>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-xs text-gray-400 uppercase tracking-wider">
+        <tr>
+          <th class="text-left px-5 py-3">User</th>
+          <th class="text-left px-5 py-3">Role</th>
+          <th class="text-left px-5 py-3">Brand access</th>
+          <th class="text-left px-5 py-3">Can do</th>
+          <th class="text-left px-5 py-3">Cannot do</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        <tr class="hover:bg-gray-50">
+          <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-xs font-bold text-purple-700">CB</div><div><div class="font-medium">CEO B</div><div class="text-xs text-gray-400">ceob@agency.com</div></div></div></td>
+          <td class="px-5 py-3"><span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full">Admin</span></td>
+          <td class="px-5 py-3 text-xs text-gray-600">All 8 brands</td>
+          <td class="px-5 py-3 text-xs text-green-700">Everything incl. billing + user management</td>
+          <td class="px-5 py-3 text-xs text-gray-300">—</td>
+          <td class="px-5 py-3 text-xs text-gray-300">You</td>
+        </tr>
+        <tr class="hover:bg-gray-50">
+          <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-xs font-bold text-green-700">PR</div><div><div class="font-medium">Priya R.</div><div class="text-xs text-gray-400">priya@agency.com</div></div></div></td>
+          <td class="px-5 py-3"><span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">Editor</span></td>
+          <td class="px-5 py-3 text-xs text-gray-600">All 8 brands</td>
+          <td class="px-5 py-3 text-xs text-green-700">Review, Accept, Edit, Schedule, Inbox, Reports</td>
+          <td class="px-5 py-3 text-xs text-red-500">Invite users · Billing · Delete brands</td>
+          <td class="px-5 py-3"><button class="text-xs text-gray-300 hover:text-red-500">Remove</button></td>
+        </tr>
+        <tr class="hover:bg-orange-50">
+          <td class="px-5 py-3"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-700">MK</div><div><div class="font-medium">Meera K.</div><div class="text-xs text-gray-400">meera@anitadongre.com</div></div></div></td>
+          <td class="px-5 py-3"><span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">Reviewer</span></td>
+          <td class="px-5 py-3 text-xs text-gray-600">Grassroot only</td>
+          <td class="px-5 py-3 text-xs text-green-700">View grid · Comments · Advisory accept</td>
+          <td class="px-5 py-3 text-xs text-red-500">Edit copy · Schedule · Other brands · Inbox · Billing</td>
+          <td class="px-5 py-3"><button class="text-xs text-gray-300 hover:text-red-500">Remove</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 11: CLIENT REVIEWER ===================== -->
+<div id="s11" class="pt-4 pb-2 px-8"><div class="screen-divider"></div><span class="screen-label">SCREEN 11 — Client Reviewer (Meera K. / magic link — no sidebar)</span></div>
+
+<div class="max-w-2xl mx-auto px-8 pb-16">
+  <div class="card overflow-hidden shadow-md">
+    <div class="bg-amber-100 px-5 py-4 border-b border-amber-200">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-amber-300 rounded-xl flex items-center justify-center font-bold text-amber-900">G</div>
+        <div>
+          <div class="font-bold text-gray-900">Grassroot — Week of 26 May 2026</div>
+          <div class="text-xs text-gray-500">Meera K. (Anita Dongre) · Reviewer · <span class="text-amber-700 font-medium">Grassroot only</span></div>
+        </div>
+        <div class="ml-auto text-sm text-gray-600">4 / 14 reviewed</div>
+      </div>
+      <div class="mt-2 text-xs text-amber-700">Your approval is advisory — the agency PM schedules. Leave comments on any post.</div>
+    </div>
+
+    <div class="p-5 space-y-3">
+      <div class="border border-green-200 rounded-xl p-4 bg-green-50">
+        <div class="flex items-center gap-2 mb-2"><span class="ch-pill ch-fb">facebook</span><span class="text-xs text-gray-400">Mon 26 · 9:30 AM</span><span class="badge-ok ml-auto">Approved ✓</span></div>
+        <p class="text-sm text-gray-800">"The block-printing on this kurta took 6 hours. Twelve hands. One pattern repeated 340 times. That's not inefficiency — that's the price of something that won't look the same on anyone else."</p>
+      </div>
+
+      <div class="border border-amber-200 rounded-xl p-4 bg-amber-50">
+        <div class="flex items-center gap-2 mb-2"><span class="ch-pill ch-ig">instagram</span><span class="text-xs text-gray-400">Mon 26 · 11:00 AM</span><span class="badge-lc ml-auto">1 comment</span></div>
+        <p class="text-sm text-gray-800">"Six hours. One kurta. This is why it's not mass-produced."</p>
+        <div class="mt-2 bg-white border border-amber-200 rounded-lg p-3 text-xs text-gray-700">
+          Your comment: "We never use 'mass-produced' — can this be 'made to order'?"
+          <div class="text-gray-400 mt-1">Awaiting agency response</div>
+        </div>
+      </div>
+
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="flex items-center gap-2 mb-2"><span class="ch-pill ch-li">linkedin</span><span class="text-xs text-gray-400">Mon 26 · 8:00 AM</span></div>
+        <p class="text-sm text-gray-800">"India has 7 million block-printing artisans. Most are invisible in the supply chain narrative. Grassroot exists to change that — not as a charity positioning but as a business model."</p>
+        <div class="flex gap-2 mt-3">
+          <button class="bg-green-600 text-white text-xs px-4 py-1.5 rounded-full font-semibold">Approve ✓</button>
+          <button class="border border-gray-200 text-gray-600 text-xs px-3 py-1.5 rounded-full">💬 Comment</button>
+        </div>
+      </div>
+
+      <div class="text-center text-sm text-gray-400 py-3 cursor-pointer hover:text-gray-600">
+        + 11 more posts to review ↓
+      </div>
+    </div>
+
+    <div class="border-t border-gray-100 px-5 py-3 bg-gray-50 flex items-center justify-between">
+      <span class="text-xs text-gray-500">4 approved · 1 commented · 9 pending</span>
+      <button class="bg-amber-500 text-white text-sm px-5 py-2 rounded-xl font-semibold hover:bg-amber-600">Submit review</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pt-16 -->
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.getElementById(a.getAttribute('href').slice(1));
+    if (t) t.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const siblings = this.closest('div').querySelectorAll('.tab-btn');
+    siblings.forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</div><!-- /pt-6 -->
+</body>
+</html>
