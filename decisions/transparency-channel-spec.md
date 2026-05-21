@@ -48,3 +48,36 @@
 ## Why this matters (bird's-eye)
 
 This is the systemic fix for the silent-fail problem we hit with Mia today. We dispatched her in narrative; nothing actually ran; we had no signal for 30+ min. With `#org-pulse`, that gap is visible in 10 min max.
+
+---
+
+## Scope C — Platform Team (added 2026-05-21 by founder)
+
+> Founder verbatim: *"hire one more uber staff engineer who will be maintaining this virtual org tech update the same ticket and ask raj to handle this."*
+
+**Decision:** stand up a dedicated **Platform Team** inside the virtual org whose sole charter is the bridge / infra / agent substrate itself — separate from product-feature work.
+
+**New role: Arjun — Platform Staff Engineer**
+- *Charter:* owns `org_bridge/` end-to-end. Heartbeat, pulse, ClickUp lifecycle, agent dispatch confirmation, decision-manifest schema, observability, cost guards.
+- *Reports to:* Devika (Chief of Staff) for prioritization; technical depth equal to Raj.
+- *Distinct from Raj:* Raj is product-backend (the things customers buy). Arjun is platform (the things that make the org itself run). No overlap, no two-DRI ambiguity.
+- *Persona file:* `.claude/agents/platform.md` (to be created by Raj as part of this ticket — agent prompt, house rules, mandatory loop).
+- *Slack channel:* `#org-arjun-platform`.
+
+**Raj's deliverables for this scope (inside the same ticket):**
+1. Write `.claude/agents/platform.md` defining Arjun's persona, charter, and mandatory loop. Mirror the structure of `.claude/agents/staff-backend.md`.
+2. Update `org_bridge/agents.py` to register `platform` as a known agent with channel routing to `#org-arjun-platform`.
+3. Update `org_bridge/slack-manifest.yaml` to add `#org-arjun-platform` (and `#org-pulse`) channels.
+4. Update `memory/state.md` org chart section to include Arjun under a new "Platform Team" header.
+5. Once Arjun exists, **transfer ownership of the heartbeat + pulse work from Raj to Arjun** — Raj kicks it off, Arjun maintains it. This avoids Raj being both product and platform DRI.
+
+**Why fold into one ticket, not split:** the Platform Team only exists *to maintain this kind of work*. Standing up the team and shipping its first deliverable (heartbeat + pulse) in the same PR is the cleanest demo of the team's purpose. Splitting = 3 tickets that all block each other.
+
+**Constraints (unchanged + new):**
+- Plan-before-code applies to the Platform Team setup too. Raj writes a 1-pager: `decisions/platform-team-charter.md` covering Arjun's scope boundary vs Raj, the explicit list of files Arjun owns, and the handoff protocol for heartbeat/pulse.
+- Founder signs off on the charter before any code or persona files are written.
+- No Phase 3 scope creep ("we should also have Arjun build X") — charter defines the boundary; new asks go to a new ticket.
+
+## Capability-honesty footnote
+
+This spec is written locally in `decisions/`. The ClickUp ticket update itself needs the bridge bot (which has ClickUp API access) to sync. In this Devika session I do not have ClickUp MCP tools loaded, so I cannot directly edit ticket `86d32w30g` from here — the bridge syncs the description from this spec file on next pulse, or Raj/Arjun applies it manually when the platform-team charter is greenlit.
