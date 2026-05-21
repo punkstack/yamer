@@ -1,141 +1,232 @@
 # PRD: SIGNAL V0.1
 Date: 2026-05-21
-Approach picked: A — Strategist-First (with Alex's framing pivot applied)
+Approach picked: A (Strategist-First) — unit of work locked as client-week packet per founder's call 2026-05-21
 Author: spm
+
+---
+
+## Pitch
+
+SIGNAL turns one client's week into a ready-to-resell deliverable — calendar, rationale, and report — for $300/mo.
+
+*(15 words)*
 
 ---
 
 ## Problem
 
-Agency CEO running 10–30 client brands. Junior strategist costs $4K/mo, doesn't retain brand voice across quarters, uses three disconnected tools (ChatGPT + Buffer + a spreadsheet), and produces a monthly client report that takes 2–3 hours per client to write. When the strategist quits, institutional knowledge walks out. The CEO conditionally committed to $300/mo for a tool that handles AI marketing plans, brand cycles, scheduling across 14 platforms, and historical analysis — but the immediate pain is simpler: nobody on the team produces strategy fast enough or consistently enough. The CEO needs to see that an AI agent can produce a client deliverable they'd actually send — not just a drafted post, but the rationale behind it.
+I run a boutique marketing agency with 10–15 client brands. My junior strategist costs $4K/mo, burns out every 14 months, and produces monthly client reports by manually copying numbers into a Google Doc for 2–3 hours per client. When she quits, the voice knowledge for each brand leaves with her. Buffer schedules. ChatGPT drafts. Neither produces the thing I actually sell the client: a strategic deliverable that shows I'm thinking about their brand, not just posting at it. I'd pay $300/mo for a tool that produces that deliverable — but only if it sounds like the client and not like a ChatGPT template.
 
 ---
 
 ## Who
 
-Primary user: the agency CEO or senior account director at a mid-market marketing agency running 10–30 client brands, operating with 3–8 staff. Current alternative: junior strategist ($3–6K/mo) + Buffer/Hootsuite ($50–200/mo) + ChatGPT (ad-hoc) + manual reporting (2–3 hrs/client/month). Confirmed: 3 CEOs in founder's network have given a conditional yes at $300/mo.
+**Primary user:** Owner-operator CEO of a Bangalore or SEA boutique marketing agency running 3–15 client brands on retainer. Staff of 3–8. Billing each client $1,500–2,500/mo. Personally reviews every piece of content before it goes to the client.
 
----
+**Current alternative:** Junior strategist ($3–6K/mo) + Buffer/Hootsuite ($50–200/mo) + ChatGPT (ad-hoc) + 2–3 hrs/client/month of manual reporting. Three disconnected tools, no institutional memory, high attrition risk.
 
-## The Unit-of-Work Decision: Posts vs. Packets
+**Receipts from 3 CEO conversations:**
 
-Alex argued for packets. I previously leaned posts. After reviewing both cases, the call is: **packets**.
+> "I'd pay $300/mo if you handle scheduling across the famous 14 platforms + AI marketing plans + brand cycles + historical analysis + analytics."
+> — verbatim conditional yes, all 3 CEOs (captured in `.claude/project-config.md`)
 
-A post is a content deliverable. A packet is an agency deliverable. The difference matters for the demo moment and for the $300 price justification.
-
-**A packet is:**
-- The week's content calendar for a brand (5 posts × 2 channels = 10 posts with platform-native format)
-- One-paragraph strategic rationale per post ("why this post, why this week, what it connects to in the brand's current cycle")
-- A one-page draft of the monthly performance summary skeleton (what the agency will rebrand and send to the client)
-
-**Why packets beat posts for V0.1:**
-1. The demo moment changes from "look at these drafts" to "look at this thing you'd send to your client." That is a different emotional register. One triggers "nice writing." The other triggers "I could use this tomorrow."
-2. The $300 price anchors to the monthly report labor, not to the posts. Agencies spend 2–3 hrs/client at $100–150/hr on reporting — that is $200–450 of billable labor per client per month. SIGNAL producing the report draft at $300/agency/month is a cost compression story the CEO can do arithmetic on.
-3. The posts are inside the packet. Building posts-only is not cheaper — you are building the same draft chain. The packet adds a rationale wrapper and a report skeleton, both of which are LLM output, not new product surface.
-
-**The explicit cut this makes:** V0.1 does not demo as a "scheduler with AI." It demos as a "strategist agent that produces the deliverable." The CEO should not be thinking about Buffer during the demo. They should be thinking about their junior strategist.
+Alex's pressure test surfaced the reframe: these CEOs are not buying drafts — they are buying a resellable deliverable. Agencies bill clients $1,500–2,500/mo. The monthly report is the proof-of-value artifact they write to justify that fee. SIGNAL producing the report draft is what makes the $300 vs. $65 (Blaze AI) gap defensible.
 
 ---
 
 ## Evidence
 
-- [ReportsMate 2026](https://www.reportsmate.com/blog/how-to-automate-client-reporting-for-marketing-agencies-in-2026) — agencies spend 2–3 hours per client on monthly reports; 20 clients = 40–60 hours/month of reporting labor, more than one FTE
-- [Blaze AI Review 2026 — WMappDigital](https://wmappdigital.com/blaze-ai-review/) — Blaze requires one workspace (one subscription) per client brand; at $65–79/mo per brand, managing 10 brands costs $650–790/mo with no cross-brand learning, no weekly packet, no client report output. SIGNAL's $300/agency is structurally cheaper and produces more.
-- [Search Engine Land — AI squeezing agencies](https://searchengineland.com/ai-squeezing-marketing-agencies-472189) — 66% of agency owners worried about talent pipeline; junior strategist attrition is the stated pain
-- [Blaze AI Pricing](https://www.blaze.ai/pricing) — $65/mo, no per-brand memory across an agency portfolio, no client report generation. Confirms the gap at $300 is justified if the strategist output quality and reporting land.
+- [ReportsMate 2026](https://www.reportsmate.com/blog/how-to-automate-client-reporting-for-marketing-agencies-in-2026) — agencies spend 2–3 hrs/client on monthly reports at $100–150/hr billable; 20 clients = 40–60 hrs/month of reporting labor, more than one FTE. SIGNAL's report draft removes that labor cost.
+- [Blaze AI Review — SaaSGenius 2026](https://www.saasgenius.com/reviews/blaze-ai/) — Blaze autopilot at $46–65/mo already drafts a week of posts. Differentiation at $300 requires a resellable deliverable, not just better post drafts.
+- [Search Engine Land — AI squeezing agencies 2025](https://searchengineland.com/ai-squeezing-marketing-agencies-472189) — 66% of agency owners worry about talent pipeline; junior strategist attrition is stated pain, not a hypothesis.
+- [Postiz Review 2026 — LifetimeDealTech](https://lifetimedealtech.com/postiz-review-2026/) — Postiz is open-source, MIT-licensed, agentic-ready. Phase 1 scheduler is a Postiz fork. Do not build from scratch.
 
 ---
 
-## MVP — Ship in 14 days (deadline 2026-06-04)
+## The Client-Week Packet — Exact Spec
 
-**Must-have:**
+The unit of work is a **client-week packet**, not a set of post drafts. One packet per brand per week. Delivered Monday morning.
 
-1. Brand kit ingestion — accepts text paste or Google Doc URL. Extracts: brand name, tone descriptors, messaging pillars, audience definition, off-limits topics. Stored as a structured JSON profile. No file parser, no PDF upload, no UI form yet — a script or a simple intake page is fine for the demo.
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLIENT-WEEK PACKET
+[Brand Name] — Week of [Mon Date]
+Delivered to: [Agency CEO name] via email
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-2. Post history ingestion — founder manually pastes 20–30 posts from the demo brand's FB and LinkedIn in the last 30 days into a text file or CSV. The agent reads them before drafting. This is not an API pull. It is a manual file load. Zero OAuth required.
+SECTION 1 — STRATEGIC HEADER
+Weekly theme: [1 sentence — what narrative thread ties this week]
+Why this week: [2–3 sentences — connects to brand cycle, seasonal
+               context, or last week's performance signal if available]
+Watch for: [1 sentence — what to flag proactively to the client]
 
-3. Strategist agent draft chain — Claude on Max plan. One chain per brand per week. Output: 5 posts for Facebook (with native format: short caption, link position, hashtag count per FB norms) + 5 posts for LinkedIn (with native format: longer professional framing, no more than 3 hashtags). Each post includes a one-sentence rationale.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — WEEKLY CALENDAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-4. Client-week packet assembly — takes the 10 draft posts + rationales, formats them into a structured document: weekly calendar view (Mon–Fri), rationale per post, draft monthly report skeleton (3 paragraphs: what we posted, what performed, what we recommend for next month — placeholder data for the demo since there is no real analytics yet).
+MONDAY
+  FACEBOOK
+  [Post copy — max 280 chars, no more than 2 hashtags]
+  Rationale: [1 sentence answering: why this topic / why today / why this hook]
 
-5. Delivery to approval — packet delivered as a formatted email to the CEO with an approve-all link, a request-edits link, and individual approve/edit per post. No Slack bot for V0.1. Email ships in 4 hours. Slack bot is Phase 1.
+  LINKEDIN
+  [Post copy — max 600 chars, professional framing, max 3 hashtags]
+  Rationale: [1 sentence answering: why this topic / why today / why this hook]
 
-6. Approval capture — approve-all records a timestamp and confirmation. Request-edits sends a reply-to-email loop (CEO replies with notes, founder reads and adjusts manually for V0.1). This is not automated edit processing — that is Phase 1. The demo only needs to prove the loop exists, not that it is automated end-to-end.
+TUESDAY ... FRIDAY [same structure]
+
+Note: Saturday and Sunday omitted unless brand kit specifies weekend cadence.
+
+Low-confidence posts (where rationale cannot be justified by brand kit
+or sample posts) are flagged inline:
+  ⚠ LOW CONFIDENCE — [reason]. Recommend human review before approving.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — MONTHLY REPORT DRAFT SKELETON
+(week-4 packet only)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Brand Name] — Monthly Performance Summary — [Month Year]
+Draft prepared by SIGNAL. Agency to review, add real metrics, rebrand, and send.
+
+WHAT WE POSTED
+[3–4 sentences summarizing the month's content themes and why]
+
+WHAT PERFORMED
+- [Top post 1 — describe, note engagement signal — placeholder in V0.1]
+- [Top post 2]
+- [Top post 3]
+
+WHAT WE LEARNED
+[2–3 sentences — voice observation or platform insight from the month]
+
+NEXT MONTH RECOMMENDATION
+[2–3 sentences — what SIGNAL proposes to shift in strategy and why]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — APPROVAL ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reply "APPROVED" to approve all posts.
+Reply with the post day + platform + your note to request an edit.
+Reply "REJECT" + reason to reject the full week (treated as brand kit gap).
+```
+
+**Per-post rationale rule:** Each rationale sentence answers exactly one of: (a) why this topic — connects to a brand kit pillar or a performance signal; (b) why today — audience timing, campaign cycle, or contextual hook; (c) why this hook — format choice relative to brand voice. One sentence. No padding. If the agent cannot answer, it flags the post as LOW CONFIDENCE.
+
+**Monthly report rule:** It is not a polished client-ready document. It is a structured skeleton the agency PM edits in 30 minutes and sends under their own letterhead. V0.1 uses placeholder performance language (no real analytics yet). Real data is Phase 1.
+
+---
+
+## The One Demo Moment
+
+**The agency CEO reads the week-1 packet for their client brand and says: "I would show this to my client tomorrow."**
+
+Not "this is pretty good for AI." Not "interesting." That specific sentence. It signals simultaneously that the voice is close enough the CEO trusts it, and that the format is client-presentable. Everything in the 14-day build is subordinated to landing that one moment.
+
+Secondary signal: CEO says "this sounds like them" when reading the Monday post aloud without prompting.
+
+---
+
+## MVP (ship by 2026-06-04)
+
+**Must-have — 6 actions the user does:**
+
+1. **Founder pastes the brand kit** (text or Google Doc URL) + 20–30 sample posts from the demo brand's FB and LinkedIn into a minimal setup interface (CLI script or bare intake form — whichever ships faster). Agent extracts: brand name, tone descriptors, messaging pillars, audience definition, off-limits topics.
+
+2. **SIGNAL generates the full client-week packet** — 5 posts × 2 channels + per-post rationale + strategic header — zero manual intervention after brand kit ingestion.
+
+3. **Agency CEO receives the packet** via formatted plain-text email with the approval action block (approve-all / request-edit per post / reject week).
+
+4. **Agency CEO approves the week** by replying "APPROVED." System logs timestamp + confirmation to a local file. No database.
+
+5. **Agency CEO requests an edit** by replying with post day + platform + note. Founder reads the reply and adjusts manually for V0.1. No automated edit processing — the loop exists for the demo, automation is Phase 1.
+
+6. **SIGNAL appends the monthly report draft skeleton** to the week-4 packet. CEO receives it alongside the week's calendar. No real analytics — placeholder language explicitly labeled as such.
 
 **Explicit cuts:**
 
 - No scheduler. No posting to any platform. No OAuth. No API connections. Zero.
-- No dashboard. No UI beyond the email delivery and a minimal intake page if needed.
-- No multi-brand. One brand, one agency, hardcoded to the demo partner.
-- No automated edit processing. CEO's edit requests are read by the founder manually.
-- No analytics. The monthly report draft uses placeholder performance language.
-- No Slack bot. Email only.
-- No brand voice training loop. One-shot ingestion from kit + 30 days of posts. Learning over time is Phase 1.
-- No client-side portal. The agency CEO is the only approver in V0.1.
-- No CSV export. The packet is a formatted email, not a spreadsheet.
+- No Slack bot. Email only. Slack OAuth is 2–3 days that do not improve the demo.
+- No dashboard or web UI. A minimal intake page or CLI is sufficient.
+- No multi-brand. One brand, one agency, hardcoded to the design partner.
+- No analytics. Monthly report draft uses placeholder performance language.
+- No automated edit processing. CEO's edit requests are handled manually by founder.
+- No historical post API pull. Manual paste of 20–30 sample posts.
+- No image generation, no edit studio, no influencer layer. Phase 2. Firewalled.
+- No client portal. Agency CEO is the only approver in V0.1.
+- No CSV import/export.
 
-**Later (Phase 1, months 1–4):**
+**Later (Phase 1, months 1–4 post-demo):**
 
-- Postiz fork for 14-platform scheduling
+- Postiz fork for FB + LinkedIn + Instagram scheduling (3 platforms first, not 14)
 - Structured brand kit editor UI
-- Automated edit processing
+- Automated edit processing in-product
 - Slack bot delivery
-- Historical performance analytics
+- Historical performance API pull + analytics
 - Multi-brand support
-- Approval workflow in-product
-- Real monthly report with actual data
+- Real monthly report with actual engagement data
+- Approval workflow in-product (not email-reply)
 
 ---
 
 ## Success Metric
 
-**The demo is a YES when the CEO says both of these sentences, unprompted:**
-1. "This sounds like my client."
-2. "I would show this to my client."
+**One metric. One target. One deadline.**
 
-One sentence is not enough. Both, in the same demo, from at least 1 of 3 CEOs, by 2026-06-04.
+At least 1 of the 3 conditional-yes CEOs says both sentences in the demo session by 2026-06-04:
+- "This sounds like them."
+- "I would show this to my client tomorrow."
 
-Measurable follow-on: at least 1 of the 3 CEOs commits in writing (email or Slack) to staying in the design-partner program through Phase 1, before the demo session ends.
+And commits in writing (email or Slack) before the call ends to stay in the design-partner program through Phase 1.
 
-**Kill signal:** if 0 of 3 CEOs say both sentences after V0.1, the strategist-agent thesis is wrong and we stop or reframe. This is the kill criterion from the project config — it holds.
+Target: 1 of 3. Stretch: 2 of 3. If 0 of 3, demo is a fail.
+
+---
+
+## Kill Criteria (day 60 = 2026-07-21)
+
+By 2026-07-21, if any of the following is false, SIGNAL stops or pivots to selling directly to brands:
+
+1. At least 2 of 3 conditional-yes CEOs respond stronger to "produces the client deliverable" framing than to "drafts the week" framing — confirmed by founder's reframe calls by 2026-05-28. DRI: founder.
+2. At least 1 CEO says "I would show this to my client" at the V0.1 demo by 2026-06-04. DRI: founder.
+3. At least 2 peer CEOs outside the founder's network (cold referrals) validate the $300 price on the reframed pitch by 2026-06-20. Kills the selection-bias risk on 3 CEOs from one network. DRI: founder. [Source: Alex's 30-day kill criteria — `decisions/signal-innovator-pressure-test.md`]
+
+Miss any one → replan. No "let me think about it."
 
 ---
 
 ## Top 3 Risks
 
-1. **Draft quality fails the demo.** The brand voice doesn't land — posts sound generic, tone is off, rationale feels templated. This is the single highest-risk item. Mitigation: founder runs 3 internal test cycles against real historical posts from the demo brand before the CEO sees anything. If the internal test fails, the demo is rescheduled — a bad draft demo is worse than a late demo.
+1. **Brand voice quality fails the demo.** Posts sound generic; rationale feels templated; CEO says "it's close but not quite." This is the single highest-risk item — a bad draft demo is worse than a late demo. Mitigation: founder tests the draft chain against at least 3 real historical posts from the demo brand internally before the CEO sees anything. If the internal test fails, reschedule. Do not show a bad packet. DRI: founder.
 
-2. **The packet framing doesn't resonate — CEOs want to see scheduling first.** Alex called this risk. If the 3 CEOs respond to the "client-week packet" framing with "but can it actually post?" rather than "this is exactly what I need," the framing pivot is wrong and we revert to posts-only with a scheduling roadmap prominent in the deck. Mitigation: founder calls all 3 CEOs with the reframed pitch before 2026-05-28 — confirm which framing excites them before building toward the wrong demo.
+2. **Brand kit material is not in hand by day 3 (2026-05-24).** Without the demo brand's kit and sample posts, there is no time to validate draft quality before 2026-06-04. Every day of delay in kit receipt compresses the test window. Mitigation: founder asks the design-partner agency CEO today — names the brand, asks for a rough brief and a post export by Friday. DRI: founder.
 
-3. **Solo dev bandwidth runs out before day 14.** The 14-day window with a day job at Uber is the execution constraint, not the technical difficulty. Mitigation: the cuts above are non-negotiable. If the founder adds one feature outside the must-have list, the deadline moves, and a missed deadline is a kill criterion. Every "what if we also..." question gets logged to a parking lot and answered after the demo.
-
----
-
-## The 3-CEO Demo Script
-
-This is not a feature tour. It is 3 scenes.
-
-**Scene 1 — "Your client, not a demo brand" (minutes 0–5)**
-Founder opens with the brand kit summary on screen: "This is [Brand Name]'s voice profile — I ingested your brief and 30 days of their posts. Here's what the agent understood about them." Reads back 2–3 accurate voice descriptors to the CEO. CEO corrects anything wrong. This moment proves: the agent read the brand, not a generic template.
-
-**Scene 2 — "The week your strategist would have written" (minutes 5–15)**
-Founder shares the client-week packet. Does not narrate it — hands it to the CEO and says "read the Monday post and its rationale." Watches the CEO's face. If the CEO says "hm" and starts editing in their head, that is a signal. If the CEO says "this is wrong — they'd never say that," that is also data. Ask: "Would you change the voice, or the strategy?" The answer tells you which axis to improve.
-
-**Scene 3 — "The report you'd send the client" (minutes 15–20)**
-Shows the monthly report draft skeleton. "This is what SIGNAL generates at the end of the month. You'd add your logo, fill in the real numbers, and send it. Right now it has placeholder data because we haven't integrated analytics yet — that's month 2. But is this the structure you'd send?" If the CEO says yes, the profit-center framing is validated. If they say "our clients get something totally different," ask them to describe it — that is the product spec for the real Phase 1 report.
-
-Close: "We're onboarding design partners at $300/mo when the scheduler ships in month 1. I'm keeping 3 slots open for the agencies that see this demo. Are you in?" Get a yes or a no in the room. Do not leave with "let me think about it."
+3. **Solo dev bandwidth overrun kills the deadline.** The 14-day window with a Uber day job is the primary execution constraint, not technical difficulty. Any scope addition outside the 6 must-haves above moves the deadline, and a missed deadline is a kill criterion. Mitigation: the CoS enforces the cut list. Every "what if we also..." goes to a parking lot document, not the sprint. DRI: founder (scope discipline) + CoS (enforcement).
 
 ---
 
-## Open Questions for the Founder (must be answered before Mia starts mockups)
+## Open Questions for the Founder
 
-1. Which agency and which client brand is the V0.1 demo brand? Need brand kit material and 30 posts by 2026-05-24. DRI: founder.
+**Q1 — Which agency and which client brand is the V0.1 design partner?**
+Need brand kit material and 20–30 sample posts by 2026-05-24 (day 3 of the 14-day window). If not resolved today, the 2026-06-04 demo is at risk. Answer before end of day 2026-05-21. DRI: founder.
 
-2. Does the demo CEO have a Slack workspace and expect a Slack bot, or is email acceptable? If Slack: add 2 days to build the bot. DRI: founder (ask the CEO today).
+**Q2 — Brand kit ingestion format for the demo brand.**
+Text doc, Google Doc URL, PDF, or "in someone's head"? V0.1 accepts text paste or Google Doc URL. If it is a PDF or verbal, the ingestion session changes: schedule a structured 60-minute call with the agency PM, run the intake live. Do not build a file parser. Answer by 2026-05-22. DRI: founder.
 
-3. Will you call all 3 CEOs with the reframed "client deliverable" pitch before 2026-05-28 to validate the packet framing? If 0 of 3 respond stronger to packets, revert to posts-only framing immediately. DRI: founder.
+**Q3 — Email or Slack for V0.1 packet delivery?**
+Email ships in 4 hours. Slack bot requires OAuth setup (2–3 days). Position: email is the correct call unless the design-partner CEO explicitly expects a Slack bot and has a workspace ready to add a bot to today. Decide by 2026-05-22 — this gates Raj's build scope. DRI: founder.
 
-4. Confirmed: Claude on Max plan for the draft chain? No other LLM approved without this decision closed today. DRI: founder.
+---
 
-5. Does the demo brand have 20–30 posts from the last 30 days available in any exportable format (screenshot dump, CSV, copy-paste)? If not, what does "30 days of posts" look like for this brand — are they even posting regularly? If they post 2x per month, the history ingestion step is meaningless. DRI: founder (ask the agency PM).
+## DRI Table — Next Steps
+
+| Who | What | By when |
+|-----|------|---------|
+| Founder | Name the V0.1 design-partner agency and client brand | 2026-05-21 EOD |
+| Founder | Call all 3 CEOs with "client deliverable" reframe; confirm which framing excites them | 2026-05-28 |
+| Founder | Confirm email vs. Slack delivery + confirm Claude on Max plan as the LLM | 2026-05-22 |
+| Founder | Get brand kit + 20–30 sample posts from design-partner agency | 2026-05-24 |
+| Mia (staff-frontend) | 3 HTML mockups of the client-week packet email + approval UX — design for scale (50 brands × 20 accounts), V0.1 shows 1 brand | After Q1 answered |
+| Raj (staff-backend) | 3 arch options for V0.1 backend: brand ingestion → LLM draft chain → email delivery → approval log | After Q2 + Q3 answered |
+| CoS | Run Grill Me on this PRD with founder; dispatch auditor | 2026-05-21 |
