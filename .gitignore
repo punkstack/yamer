@@ -1,0 +1,19 @@
+# Secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node / Claude Code
+node_modules/
+
+# OS
+.DS_Store
+
+# Build artifacts that should not be committed
+agent-worktrees/
+code/node_modules/

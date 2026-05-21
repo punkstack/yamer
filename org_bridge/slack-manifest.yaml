@@ -1,0 +1,45 @@
+display_information:
+  name: Org
+  description: Your AI product team in Slack. Each agent appears as itself in its own channel.
+  background_color: "#0a0a0a"
+features:
+  bot_user:
+    display_name: Org
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      # Read messages
+      - app_mentions:read
+      - channels:history
+      - groups:history
+      - im:history
+      - mpim:history
+      # Post messages
+      - chat:write
+      - chat:write.customize    # required to post as a different username/avatar (Sarah, Raj, etc.)
+      # Manage channels (auto-create per-agent channels on first run)
+      - channels:read
+      - channels:write
+      - channels:manage
+      - channels:join
+      - groups:read
+      # Talk to humans in DMs
+      - im:read
+      - im:write
+      # Read user info (for "DM the founder" features)
+      - users:read
+      - users:read.email
+      # Reactions (acknowledgement signaling)
+      - reactions:read
+      - reactions:write
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - message.channels
+      - message.im
+  interactivity:
+    is_enabled: true
+  socket_mode_enabled: true        # critical — lets the bridge run locally without a public URL
+  token_rotation_enabled: false
