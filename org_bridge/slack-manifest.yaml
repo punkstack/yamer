@@ -20,7 +20,6 @@ oauth_config:
       - chat:write.customize    # required to post as a different username/avatar (Sarah, Raj, etc.)
       # Manage channels (auto-create per-agent channels on first run)
       - channels:read
-      - channels:write
       - channels:manage
       - channels:join
       - groups:read
@@ -33,6 +32,11 @@ oauth_config:
       # Reactions (acknowledgement signaling)
       - reactions:read
       - reactions:write
+  # Channels provisioned by the bridge on first run (via slack_setup.py).
+  # Listed here for documentation; the bot creates them programmatically.
+  # New channels added 2026-05-21:
+  #   org-pulse          — 10-min transparency feed (bot-only posts, read-only for humans)
+  #   org-arjun-platform — Platform team channel for Arjun (platform engineer)
 settings:
   event_subscriptions:
     bot_events:
